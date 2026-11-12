@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -61,6 +65,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -107,25 +112,46 @@ fun BrowserChrome(
 ) {
     val tokens = LocalGlassTokens.current
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
     val tab = state.activeTab
     val editing = state.omnibox.editing
     val imeOpen = WindowInsets.ime.getBottom(density) > 0
     val expanded = editing || state.findOpen || imeOpen || !state.chromeCollapsed || state.sheet == Sheet.Menu
+    // Flush to the top and sides of the window. On a tablet (e.g. Galaxy Tab A9
+    // landscape) a floating shelf+margin left a visible gap above the bar.
+    // The glass itself goes to the screen edge; safe-drawing insets pad only
+    // the tabs and toolbar so they clear the status bar and the camera cutout.
+    val safe = WindowInsets.safeDrawing.asPaddingValues()
+    val innerPad = PaddingValues(
+        start = tokens.shelfPad + safe.calculateStartPadding(layoutDirection),
+        end = tokens.shelfPad + safe.calculateEndPadding(layoutDirection),
+        top = tokens.shelfPad + safe.calculateTopPadding(),
+        bottom = tokens.shelfPad,
+    )
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(horizontal = tokens.shelfMargin)
-            .padding(top = tokens.shelfMargin),
+        modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (!expanded && tab != null) {
-            CollapsedPill(url = tab.url, loading = tab.isLoading, onClick = onEdit)
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(top = 4.dp),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                CollapsedPill(url = tab.url, loading = tab.isLoading, onClick = onEdit)
+            }
         } else {
             GlassSurface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(tokens.shelfRadius),
-                contentPadding = PaddingValues(tokens.shelfPad),
+                shape = RoundedCornerShape(
+                    topStart = 0.dp,
+                    topEnd = 0.dp,
+                    bottomStart = tokens.shelfRadius,
+                    bottomEnd = tokens.shelfRadius,
+                ),
+                contentPadding = innerPad,
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(tokens.rowGap)) {
                     TabStrip(

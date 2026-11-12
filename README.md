@@ -9,17 +9,22 @@ Aqualux is a native **Android browser**. Pages render in Android System WebView,
 | | |
 |---|---|
 | Package name | `com.aqualux.browser` |
-| Version | 1.0.1 (`versionCode` 2) |
+| Version | 1.0.2 (`versionCode` 3) |
 | minSdk | 26 (Android 8.0) |
 | targetSdk / compileSdk | 37 / 37.2 |
 
 The icon above is the official launcher icon (Liquid Glass mark).
 
+## What's new in 1.0.2
+
+The top toolbar is flush with the top edge of the screen instead of sitting below a floating margin. This was reported on a Galaxy Tab A9 8.7" in landscape and applies on phones and tablets. 1.0.2 is signed with the same sideload certificate as 1.0.0 and 1.0.1, so you can install it over the previous version without uninstalling.
+
 ## Install the APK (sideload)
 
-This build is **not** distributed on the Play Store. Download the signed release APK [`Aqualux-1.0.1.apk`](https://github.com/Woodjamesley201/Aqualux/releases/download/v1.0.1/Aqualux-1.0.1.apk) from [Release v1.0.1](https://github.com/Woodjamesley201/Aqualux/releases/tag/v1.0.1), then install it on the phone:
 
-1. Download `Aqualux-1.0.1.apk` from [Release v1.0.1](https://github.com/Woodjamesley201/Aqualux/releases/tag/v1.0.1).
+This build is **not** distributed on the Play Store. Download the signed release APK from [GitHub Releases](https://github.com/Woodjamesley201/Aqualux/releases) (`Aqualux-1.0.2.apk`), then install it on the phone:
+
+1. Download `Aqualux-1.0.2.apk` from the latest release.
 2. Enable **Install unknown apps** for the browser you used to download the file (Android Settings → Apps → that browser → Install unknown apps). This is a one-time step for that browser.
 3. Open the downloaded APK and confirm the install.
 
@@ -28,12 +33,12 @@ The release APK is minified with R8 and signed. Android will not install an unsi
 With a computer and USB debugging, the same APK can be installed with:
 
 ```bash
-adb install -r Aqualux-1.0.1.apk
+adb install -r Aqualux-1.0.2.apk
 ```
 
 Aqualux registers `VIEW` intents for `http` and `https`, plus web search and shared text, so it can be chosen as the default browser in system settings.
 
-The shelf floats over edge-to-edge page content. On a phone it sits under the status bar: a tab row, a toolbar, and a pill omnibox. Scroll down and it collapses to a centered host pill. Scroll up, or tap the pill, and it opens again.
+The chrome is a full-width bar flush with the top of the screen. The glass extends under the status bar (square top corners, rounded bottom corners), and the tabs and omnibox are padded clear of the status bar and any camera cutout — including in landscape on compact tablets such as the Galaxy Tab A9 8.7". Scroll down and it collapses to a centered host pill. Scroll up, or tap the pill, and it opens again.
 
 ## Architecture
 
@@ -76,7 +81,7 @@ Open the repository root in Android Studio, or build from a terminal. The Gradle
 Outputs:
 
 - `app/build/outputs/apk/debug/aqualux-debug.apk` — debug key, not minified
-- `Aqualux-1.0.1.apk` — R8 minified release, signed with the v1.0.0 sideload keystore
+- `Aqualux-1.0.2.apk` — R8 minified release, signed with the v1.0.0 sideload keystore
 
 `assembleRelease` is minified with R8 and resource shrinking. If `keystore.properties` and the `AQUALUX_*` environment variables are both absent, the release APK is signed with the debug keystore so it is still installable. A debug-signed release build cannot be updated later by a build signed with the sideload keystore without uninstalling first.
 

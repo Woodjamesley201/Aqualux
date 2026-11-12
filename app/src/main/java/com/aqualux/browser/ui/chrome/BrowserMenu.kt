@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -59,7 +61,8 @@ fun BrowserMenu(
     val tokens = LocalGlassTokens.current
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
-    val top = with(density) { (tokens.shelfMargin * 2 + tokens.shelfPad * 2 + tokens.tabRowHeight + tokens.rowGap + tokens.toolbarHeight + 8.dp).roundToPx() }
+    val safeTop = with(density) { WindowInsets.safeDrawing.getTop(density).toDp() }
+    val top = with(density) { (safeTop + tokens.shelfPad * 2 + tokens.tabRowHeight + tokens.rowGap + tokens.toolbarHeight + 8.dp).roundToPx() }
     val maxHeight = (configuration.screenHeightDp * 0.7f).dp
     Dialog(
         onDismissRequest = onDismiss,
