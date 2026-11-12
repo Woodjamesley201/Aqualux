@@ -31,6 +31,15 @@ object BrowserIcons {
         close()
     }
 
+    val Bookmark: ImageVector = icon("Bookmark") {
+        moveTo(6f, 3f)
+        lineTo(18f, 3f)
+        lineTo(18f, 21f)
+        lineTo(12f, 17f)
+        lineTo(6f, 21f)
+        close()
+    }
+
     val Pin: ImageVector = icon("Pin") {
         moveTo(14f, 3f)
         lineTo(16f, 5f)

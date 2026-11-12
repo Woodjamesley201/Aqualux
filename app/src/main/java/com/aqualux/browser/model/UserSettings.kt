@@ -14,6 +14,15 @@ enum class ThemeMode(val id: String, val label: String) {
     }
 }
 
+/**
+ * v1.0.0 shipped with no stored theme, which rendered as System.
+ * A missing value migrates to Light. An explicit Dark or System choice is kept.
+ */
+fun themeFromStore(stored: String?): ThemeMode {
+    if (stored.isNullOrBlank()) return ThemeMode.LIGHT
+    return ThemeMode.entries.firstOrNull { it.id == stored } ?: ThemeMode.LIGHT
+}
+
 enum class Density(val id: String, val label: String) {
     REGULAR("regular", "Regular"),
     COMPACT("compact", "Compact"),
@@ -66,7 +75,7 @@ object AccentPresets {
  * [reducedEffects] is the manual override that turns off blur, refraction, and spring motion.
  */
 data class UserSettings(
-    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeMode: ThemeMode = ThemeMode.LIGHT,
     val accentHue: Int = LiquidGlass.ACCENT_HUE_DEFAULT,
     val glassIntensity: Float = 0.5f,
     val blurScale: Float = 1f,

@@ -12,8 +12,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.aqualux.browser.design.LiquidGlass
 import com.aqualux.browser.model.CornerStyle
 import com.aqualux.browser.model.Density
-import com.aqualux.browser.model.ThemeMode
 import com.aqualux.browser.model.UserSettings
+import com.aqualux.browser.model.themeFromStore
 import com.aqualux.browser.omnibox.SearchEngine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -33,7 +33,7 @@ class SettingsRepository(private val context: Context) {
     }
 
     private fun Preferences.toUserSettings(): UserSettings = UserSettings(
-        themeMode = ThemeMode.fromId(this[Keys.THEME]),
+        themeMode = themeFromStore(this[Keys.THEME]),
         accentHue = LiquidGlass.wrapHue(this[Keys.HUE] ?: LiquidGlass.ACCENT_HUE_DEFAULT),
         glassIntensity = (this[Keys.GLASS] ?: 0.5f).coerceIn(0f, 1f),
         blurScale = (this[Keys.BLUR] ?: 1f).coerceIn(0.5f, 1.5f),

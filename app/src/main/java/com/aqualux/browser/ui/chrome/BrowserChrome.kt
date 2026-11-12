@@ -87,7 +87,6 @@ import kotlinx.coroutines.withContext
 @Composable
 fun BrowserChrome(
     state: BrowserUiState,
-    textZoom: Int,
     onEdit: () -> Unit,
     onDraft: (String) -> Unit,
     onSubmit: () -> Unit,
@@ -98,20 +97,10 @@ fun BrowserChrome(
     onReload: () -> Unit,
     onTabs: () -> Unit,
     onMenu: () -> Unit,
-    onCloseMenu: () -> Unit,
     onNewTab: () -> Unit,
-    onDuplicate: () -> Unit,
-    onFind: () -> Unit,
     onFindQuery: (String) -> Unit,
     onFindNext: (Boolean) -> Unit,
     onCloseFind: () -> Unit,
-    onShare: () -> Unit,
-    onBookmark: () -> Unit,
-    onBookmarks: () -> Unit,
-    onDownloads: () -> Unit,
-    onDesktop: () -> Unit,
-    onTextZoom: (Int) -> Unit,
-    onSettings: () -> Unit,
     onSelectTab: (String) -> Unit,
     onCloseTab: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -167,25 +156,6 @@ fun BrowserChrome(
         if (state.findOpen) {
             Spacer(Modifier.height(8.dp))
             FindRow(state.findQuery, state.findActive, state.findCount, onFindQuery, onFindNext, onCloseFind)
-        }
-        if (state.sheet == Sheet.Menu && tab != null) {
-            Spacer(Modifier.height(8.dp))
-            MenuSheet(
-                bookmarked = state.isBookmarked(tab.url),
-                desktop = tab.desktop,
-                textZoom = textZoom,
-                onClose = onCloseMenu,
-                onNewTab = { onCloseMenu(); onNewTab() },
-                onDuplicate = { onCloseMenu(); onDuplicate() },
-                onFind = { onCloseMenu(); onFind() },
-                onShare = { onCloseMenu(); onShare() },
-                onBookmark = onBookmark,
-                onBookmarks = { onCloseMenu(); onBookmarks() },
-                onDownloads = { onCloseMenu(); onDownloads() },
-                onDesktop = onDesktop,
-                onTextZoom = onTextZoom,
-                onSettings = { onCloseMenu(); onSettings() },
-            )
         }
     }
 }
@@ -627,62 +597,5 @@ private fun FindRow(
             GlassIconButton(Icons.AutoMirrored.Filled.ArrowForward, "Next match", { onNext(true) }, size = 32.dp)
             GlassIconButton(Icons.Filled.Close, "Close find", onClose, size = 32.dp)
         }
-    }
-}
-
-@Composable
-private fun MenuSheet(
-    bookmarked: Boolean,
-    desktop: Boolean,
-    textZoom: Int,
-    onClose: () -> Unit,
-    onNewTab: () -> Unit,
-    onDuplicate: () -> Unit,
-    onFind: () -> Unit,
-    onShare: () -> Unit,
-    onBookmark: () -> Unit,
-    onBookmarks: () -> Unit,
-    onDownloads: () -> Unit,
-    onDesktop: () -> Unit,
-    onTextZoom: (Int) -> Unit,
-    onSettings: () -> Unit,
-) {
-    val tokens = LocalGlassTokens.current
-    GlassSurface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(tokens.sheetRadius),
-        contentPadding = PaddingValues(12.dp),
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            MenuRow("New tab", Icons.Filled.Add, onNewTab)
-            MenuRow("Duplicate tab", BrowserIcons.Tabs, onDuplicate)
-            MenuRow("Find in page", Icons.Filled.Search, onFind)
-            MenuRow("Share", Icons.Filled.Share, onShare)
-            MenuRow(if (bookmarked) "Remove bookmark" else "Bookmark this page", if (bookmarked) Icons.Filled.Star else Icons.Outlined.Star, onBookmark)
-            MenuRow("Bookmarks", Icons.Filled.Star, onBookmarks)
-            MenuRow("Downloads", BrowserIcons.Download, onDownloads)
-            MenuRow(if (desktop) "Request mobile site" else "Request desktop site", BrowserIcons.Desktop, onDesktop)
-            Text("Text size $textZoom%", color = tokens.muted, fontSize = 13.sp, modifier = Modifier.padding(start = 12.dp, top = 8.dp))
-            Slider(value = textZoom.toFloat(), onValueChange = { onTextZoom(it.toInt()) }, valueRange = 50f..200f)
-            MenuRow("Settings", Icons.Filled.Settings, onSettings)
-            MenuRow("Close menu", Icons.Filled.Close, onClose)
-        }
-    }
-}
-
-@Composable
-private fun MenuRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
-    val tokens = LocalGlassTokens.current
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(tokens.sheetRowRadius))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(icon, null, tint = tokens.ink, modifier = Modifier.size(tokens.iconSize))
-        Spacer(Modifier.width(12.dp))
-        Text(label, color = tokens.ink, fontSize = 15.sp)
     }
 }

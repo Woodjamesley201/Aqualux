@@ -9,7 +9,7 @@ Aqualux is a native **Android browser**. Pages render in Android System WebView,
 | | |
 |---|---|
 | Package name | `com.aqualux.browser` |
-| Version | 1.0.0 (`versionCode` 1) |
+| Version | 1.0.1 (`versionCode` 2) |
 | minSdk | 26 (Android 8.0) |
 | targetSdk / compileSdk | 37 / 37.2 |
 
@@ -17,9 +17,9 @@ The icon above is the official launcher icon (Liquid Glass mark).
 
 ## Install the APK (sideload)
 
-This build is **not** distributed on the Play Store. Download the signed release APK from [GitHub Releases](https://github.com/Woodjamesley201/Aqualux/releases) (`aqualux-release.apk`), then install it on the phone:
+This build is **not** distributed on the Play Store. Download the signed release APK [`Aqualux-1.0.1.apk`](https://github.com/Woodjamesley201/Aqualux/releases/download/v1.0.1/Aqualux-1.0.1.apk) from [Release v1.0.1](https://github.com/Woodjamesley201/Aqualux/releases/tag/v1.0.1), then install it on the phone:
 
-1. Download `aqualux-release.apk` from the latest release.
+1. Download `Aqualux-1.0.1.apk` from [Release v1.0.1](https://github.com/Woodjamesley201/Aqualux/releases/tag/v1.0.1).
 2. Enable **Install unknown apps** for the browser you used to download the file (Android Settings → Apps → that browser → Install unknown apps). This is a one-time step for that browser.
 3. Open the downloaded APK and confirm the install.
 
@@ -28,7 +28,7 @@ The release APK is minified with R8 and signed. Android will not install an unsi
 With a computer and USB debugging, the same APK can be installed with:
 
 ```bash
-adb install -r app/build/outputs/apk/release/aqualux-release.apk
+adb install -r Aqualux-1.0.1.apk
 ```
 
 Aqualux registers `VIEW` intents for `http` and `https`, plus web search and shared text, so it can be chosen as the default browser in system settings.
@@ -76,7 +76,7 @@ Open the repository root in Android Studio, or build from a terminal. The Gradle
 Outputs:
 
 - `app/build/outputs/apk/debug/aqualux-debug.apk` — debug key, not minified
-- `app/build/outputs/apk/release/aqualux-release.apk` — R8 minified release
+- `Aqualux-1.0.1.apk` — R8 minified release, signed with the v1.0.0 sideload keystore
 
 `assembleRelease` is minified with R8 and resource shrinking. If `keystore.properties` and the `AQUALUX_*` environment variables are both absent, the release APK is signed with the debug keystore so it is still installable. A debug-signed release build cannot be updated later by a build signed with the sideload keystore without uninstalling first.
 

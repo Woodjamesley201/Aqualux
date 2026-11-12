@@ -56,11 +56,14 @@ import com.aqualux.browser.ui.theme.GlassTokens
 import com.aqualux.browser.ui.theme.LocalGlassTokens
 import com.aqualux.browser.ui.theme.LocalReduceMotion
 
+enum class GlassVariant { Shelf, Popover }
+
 @Composable
 fun GlassSurface(
     modifier: Modifier = Modifier,
     shape: Shape,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    variant: GlassVariant = GlassVariant.Shelf,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val tokens = LocalGlassTokens.current
@@ -86,6 +89,7 @@ fun GlassSurface(
         },
         onRelease = { press = null },
         blurPx = blurPx,
+        variant = variant,
         content = content,
     )
 }
@@ -101,6 +105,7 @@ private fun GlassSurfaceBody(
     onPress: (Offset) -> Unit,
     onRelease: () -> Unit,
     blurPx: Float,
+    variant: GlassVariant,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
@@ -137,7 +142,7 @@ private fun GlassSurfaceBody(
                         renderEffect = BlurEffect(blurPx, blurPx, TileMode.Clamp)
                     }
                 }
-                .drawBehind { drawGlassFill(tokens) },
+                .drawBehind { drawGlassFill(tokens, variant) },
         )
         Box(
             Modifier
@@ -150,19 +155,14 @@ private fun GlassSurfaceBody(
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawGlassFill(tokens: GlassTokens) {
-    drawRect(
-        brush = Brush.verticalGradient(
-            0f to tokens.fillTop,
-            0.42f to tokens.fillMid,
-            1f to tokens.fillBottom,
-        ),
-    )
-    drawCircle(
-        color = tokens.accent.copy(alpha = if (tokens.dark) 0.08f else 0.06f),
-        radius = size.minDimension * 0.7f,
-        center = Offset(size.width * 0.12f, 0f),
-    )
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawGlassFill(
+    tokens: GlassTokens,
+    variant: GlassVariant,
+) {
+    val top = if (variant == GlassVariant.Popover) tokens.popoverTop else tokens.fillTop
+    val mid = if (variant == GlassVariant.Popover) tokens.popoverMid else tokens.fillMid
+    val bottom = if (variant == GlassVariant.Popover) tokens.popoverBottom else tokens.fillBottom
+    drawRect(brush = Brush.verticalGradient(0f to top, 0.42f to mid, 1f to bottom))
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawGlassEdge(

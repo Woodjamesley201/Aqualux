@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -21,10 +22,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aqualux.browser.browser.BrowserViewModel
@@ -32,10 +45,11 @@ import com.aqualux.browser.model.Sheet
 import com.aqualux.browser.model.TabSnapshot
 import com.aqualux.browser.ui.bookmarks.BookmarksPage
 import com.aqualux.browser.ui.chrome.BrowserChrome
+import com.aqualux.browser.ui.chrome.BrowserMenu
 import com.aqualux.browser.ui.error.ErrorOverlay
 import com.aqualux.browser.ui.glass.AquaMark
 import com.aqualux.browser.ui.glass.GlassToast
-import com.aqualux.browser.ui.settings.SettingsPage
+import com.aqualux.browser.ui.settings.SettingsHost
 import com.aqualux.browser.ui.start.StartPage
 import com.aqualux.browser.ui.tabs.TabSwitcher
 import com.aqualux.browser.ui.theme.AqualuxTheme
@@ -74,8 +88,14 @@ fun BrowserScreen(viewModel: BrowserViewModel) {
                 )
             } else {
                 val active = state.activeTab
-                if (active != null && active.hasDocument && state.sheet != Sheet.Tabs && state.sheet != Sheet.Settings) {
-                    TabSurface(active, viewModel)
+                var chromeHeight by remember { mutableIntStateOf(0) }
+                val showPage = active != null && active.hasDocument &&
+                    state.sheet != Sheet.Tabs &&
+                    state.sheet != Sheet.Settings &&
+                    state.sheet != Sheet.Bookmarks
+                if (showPage && active != null) {
+                    val top = if (state.fullscreen) 0.dp else with(LocalDensity.current) { chromeHeight.toDp() }
+                    TabSurface(active, viewModel, Modifier.padding(top = top).fillMaxSize())
                 }
                 if (active != null && !active.hasDocument && state.sheet == Sheet.None) {
                     StartPage(
@@ -91,7 +111,6 @@ fun BrowserScreen(viewModel: BrowserViewModel) {
                 if (state.sheet != Sheet.Tabs && state.sheet != Sheet.Settings && state.sheet != Sheet.Bookmarks && !state.fullscreen) {
                     BrowserChrome(
                         state = state,
-                        textZoom = settings.textZoom,
                         onEdit = { viewModel.beginEditing() },
                         onDraft = viewModel::onDraft,
                         onSubmit = viewModel::submitOmnibox,
@@ -102,23 +121,31 @@ fun BrowserScreen(viewModel: BrowserViewModel) {
                         onReload = viewModel::reloadOrStop,
                         onTabs = { viewModel.openSheet(Sheet.Tabs) },
                         onMenu = { viewModel.openSheet(Sheet.Menu) },
-                        onCloseMenu = viewModel::closeSheet,
                         onNewTab = { viewModel.newTab() },
-                        onDuplicate = { state.activeTabId?.let(viewModel::duplicateTab) },
-                        onFind = viewModel::openFind,
                         onFindQuery = viewModel::setFindQuery,
                         onFindNext = viewModel::findNext,
                         onCloseFind = viewModel::closeFind,
-                        onShare = viewModel::shareActive,
-                        onBookmark = viewModel::toggleBookmark,
-                        onBookmarks = { viewModel.openSheet(Sheet.Bookmarks) },
-                        onDownloads = viewModel::openDownloads,
-                        onDesktop = viewModel::toggleDesktop,
-                        onTextZoom = viewModel::setTextZoom,
-                        onSettings = { viewModel.openSheet(Sheet.Settings) },
                         onSelectTab = viewModel::selectTab,
                         onCloseTab = viewModel::closeTab,
-                        modifier = Modifier.align(Alignment.TopCenter),
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .onSizeChanged { chromeHeight = it.height },
+                    )
+                }
+                if (state.sheet == Sheet.Menu && active != null) {
+                    BrowserMenu(
+                        bookmarked = state.isBookmarked(active.url),
+                        desktop = active.desktop,
+                        onDismiss = viewModel::closeSheet,
+                        onNewTab = { viewModel.closeSheet(); viewModel.newTab() },
+                        onDuplicate = { viewModel.closeSheet(); viewModel.duplicateTab(active.id) },
+                        onFind = { viewModel.closeSheet(); viewModel.openFind() },
+                        onShare = { viewModel.closeSheet(); viewModel.shareActive() },
+                        onBookmark = viewModel::toggleBookmark,
+                        onBookmarks = { viewModel.openSheet(Sheet.Bookmarks) },
+                        onDownloads = { viewModel.closeSheet(); viewModel.openDownloads() },
+                        onDesktop = viewModel::toggleDesktop,
+                        onSettings = { viewModel.openSheet(Sheet.Settings) },
                     )
                 }
                 when (state.sheet) {
@@ -133,7 +160,7 @@ fun BrowserScreen(viewModel: BrowserViewModel) {
                         onMove = viewModel::moveTab,
                         onDone = viewModel::closeSheet,
                     )
-                    Sheet.Settings -> SettingsPage(
+                    Sheet.Settings -> SettingsHost(
                         settings = settings,
                         onChange = { updated -> viewModel.updateSettings { updated } },
                         onTextZoom = viewModel::setTextZoom,
@@ -152,26 +179,26 @@ fun BrowserScreen(viewModel: BrowserViewModel) {
                 }
             }
             state.message?.let { message ->
-                GlassToast(
-                    message = message,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 28.dp),
-                )
+                Popup(
+                    alignment = Alignment.BottomCenter,
+                    properties = PopupProperties(focusable = false),
+                ) {
+                    GlassToast(message = message, modifier = Modifier.padding(bottom = 28.dp))
+                }
             }
         }
     }
 }
 
 @Composable
-private fun TabSurface(tab: TabSnapshot, viewModel: BrowserViewModel) {
+private fun TabSurface(tab: TabSnapshot, viewModel: BrowserViewModel, modifier: Modifier) {
     var webView by remember(tab.id) { mutableStateOf(viewModel.peekWebView(tab.id)) }
     LaunchedEffect(tab.id, tab.url, tab.hasDocument) {
         webView = viewModel.ensureWebView(tab.id)
     }
     val current = webView ?: return
     AndroidView(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         factory = { context -> FrameLayout(context) },
         update = { frame ->
             if (frame.getChildAt(0) !== current) {

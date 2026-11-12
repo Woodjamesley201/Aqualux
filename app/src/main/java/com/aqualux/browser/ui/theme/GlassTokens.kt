@@ -99,7 +99,6 @@ object GlassPalette {
         val reduced = settings.reducedEffects
         val hue = LiquidGlass.wrapHue(settings.accentHue).toFloat()
         val k = if (reduced) 1f else LiquidGlass.fillK(settings.glassIntensity)
-        val underK = 1f + underContent.coerceIn(0f, 1f) * 0.25f
         val radii = LiquidGlass.radii(settings.cornerStyle.toToken())
         val metrics = LiquidGlass.chrome(settings.density.toToken())
         val blurScale = settings.blurScale
@@ -114,44 +113,45 @@ object GlassPalette {
         val ink = if (dark) rgb(240, 246, 252, 0.94f) else rgb(12, 22, 32, 0.92f)
         val muted = if (dark) rgb(240, 246, 252, 0.66f) else rgb(12, 22, 32, 0.64f)
         val faint = if (dark) rgb(240, 246, 252, 0.44f) else rgb(12, 22, 32, 0.44f)
-        val solid = if (dark) Color(0xFF1B2129) else Color(0xFFF4F8FB)
-        val solidAlt = if (dark) Color(0xFF242B35) else Color.White
+        val solid = if (dark) Color(0xFF1C1E22) else Color(0xFFF7F8FA)
+        val solidAlt = if (dark) Color(0xFF24262A) else Color.White
+        val pageTop = if (dark) Color(0xFF16181C) else Color(0xFFF5F6F8)
+        val pageBottom = if (dark) Color(0xFF1C1E22) else Color(0xFFEEF0F3)
         val fill = if (reduced) {
             Triple(solid, solid, solid)
         } else if (dark) {
             Triple(
-                rgb(58, 66, 78, cap(0.96f, 0.50f * k * underK)),
-                rgb(34, 40, 50, cap(0.95f, 0.46f * k * underK)),
-                rgb(20, 26, 34, cap(0.94f, 0.50f * k * underK)),
+                rgb(46, 48, 52, cap(0.96f, 0.80f * k)),
+                rgb(38, 40, 44, cap(0.96f, 0.76f * k)),
+                rgb(30, 32, 36, cap(0.96f, 0.74f * k)),
             )
         } else {
             Triple(
-                rgb(255, 255, 255, cap(0.96f, 0.58f * k * underK)),
-                rgb(250, 253, 255, cap(0.94f, 0.44f * k * underK)),
-                rgb(238, 246, 252, cap(0.92f, 0.38f * k * underK)),
+                rgb(255, 255, 255, cap(0.96f, 0.86f * k)),
+                rgb(250, 251, 252, cap(0.96f, 0.78f * k)),
+                rgb(244, 245, 247, cap(0.96f, 0.72f * k)),
             )
         }
         val control = if (reduced) {
-            if (dark) rgb(255, 255, 255, 0.08f) to rgb(255, 255, 255, 0.08f)
-            else rgb(12, 22, 32, 0.06f) to rgb(12, 22, 32, 0.06f)
+            fill.first to fill.third
         } else if (dark) {
-            rgb(255, 255, 255, cap(0.30f, 0.12f * k)) to rgb(255, 255, 255, cap(0.24f, 0.07f * k))
+            fill.first to fill.third
         } else {
-            rgb(255, 255, 255, cap(0.98f, 0.66f * k)) to rgb(255, 255, 255, cap(0.96f, 0.48f * k))
+            fill.first to fill.third
         }
         val popover = if (reduced) {
             Triple(solidAlt, solidAlt, solidAlt)
         } else if (dark) {
             Triple(
-                rgb(52, 60, 72, cap(0.98f, 0.78f * k)),
-                rgb(32, 38, 48, cap(0.97f, 0.76f * k)),
-                rgb(22, 28, 36, cap(0.96f, 0.80f * k)),
+                rgb(46, 48, 52, cap(0.98f, 0.88f * k)),
+                rgb(38, 40, 44, cap(0.98f, 0.84f * k)),
+                rgb(30, 32, 36, cap(0.98f, 0.82f * k)),
             )
         } else {
             Triple(
-                rgb(255, 255, 255, cap(0.98f, 0.80f * k)),
-                rgb(248, 251, 254, cap(0.97f, 0.70f * k)),
-                rgb(240, 247, 252, cap(0.96f, 0.66f * k)),
+                rgb(255, 255, 255, cap(0.98f, 0.94f * k)),
+                rgb(247, 248, 250, cap(0.98f, 0.90f * k)),
+                rgb(243, 244, 246, cap(0.98f, 0.88f * k)),
             )
         }
         return GlassTokens(
@@ -166,8 +166,8 @@ object GlassPalette {
             danger = if (dark) Color(0xFFFF5A64) else Color(0xFFD92D3A),
             warning = if (dark) Color(0xFFFFB340) else Color(0xFFC77700),
             success = if (dark) Color(0xFF3DDC84) else Color(0xFF18A058),
-            pageTop = solid,
-            pageBottom = if (dark) Color(0xFF141A22) else Color(0xFFE7F0F6),
+            pageTop = pageTop,
+            pageBottom = pageBottom,
             solid = solid,
             solidAlt = solidAlt,
             fillTop = fill.first,

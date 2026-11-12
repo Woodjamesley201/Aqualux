@@ -51,6 +51,7 @@ import com.aqualux.browser.web.AqualuxWebViewClient
 import com.aqualux.browser.web.DownloadNames
 import com.aqualux.browser.web.WebEvents
 import com.aqualux.browser.web.WebViewConfigurator
+import com.aqualux.browser.web.WebViewLayers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -927,6 +928,7 @@ class BrowserViewModel(app: Application) : AndroidViewModel(app), WebEvents {
             desktop,
         )
         webView.setBackgroundColor(pageBackground)
+        WebViewLayers.contain(webView)
         webView.webViewClient = AqualuxWebViewClient(tabId, this)
         webView.webChromeClient = AqualuxChromeClient(tabId, this) { host }
         webView.setDownloadListener { url, userAgent, disposition, mime, length ->
